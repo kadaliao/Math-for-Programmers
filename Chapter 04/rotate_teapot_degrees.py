@@ -32,7 +32,7 @@ import camera
 
 for d in range(1,46):
     if '--snapshot' in sys.argv:
-        camera.default_camera = camera.Camera('fig_4.3_%s' % d,[0])
+        camera.default_camera = camera.Camera(f'fig_4.3_{d}', [0])
     ####################################################################
 
     draw_model(polygon_map(rotate_z_by(d * pi/180), load_triangles()))

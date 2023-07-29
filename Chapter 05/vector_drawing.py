@@ -44,11 +44,9 @@ class Segment():
 def extract_vectors(objects):
     for object in objects:
         if type(object) == Polygon:
-            for v in object.vertices:
-                yield v
+            yield from object.vertices
         elif type(object) == Points:
-            for v in object.vectors:
-                yield v
+            yield from object.vectors
         elif type(object) == Arrow:
             yield object.tip
             yield object.tail
@@ -56,7 +54,7 @@ def extract_vectors(objects):
             yield object.start_point
             yield object.end_point
         else:
-            raise TypeError("Unrecognized object: {}".format(object))
+            raise TypeError(f"Unrecognized object: {object}")
 
 def draw(*objects, origin=True, axes=True, grid=(1,1), nice_aspect_ratio=True,
             width=6, save_as=None):

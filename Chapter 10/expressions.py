@@ -4,28 +4,25 @@ import math
 def paren_if_instance(exp,*args):
     for typ in args:
         if isinstance(exp,typ):
-            return "\\left( {} \\right)".format(exp.latex())
+            return f"\\left( {exp.latex()} \\right)"
     return exp.latex()
 
 def package(maybe_expression):
     if isinstance(maybe_expression,Expression):
         return maybe_expression
-    elif isinstance(maybe_expression,int) or isinstance(maybe_expression,float):
+    elif isinstance(maybe_expression, (int, float)):
         return Number(maybe_expression)
     else:
-        raise ValueError("can't convert {} to expression.".format(maybe_expression))
+        raise ValueError(f"can't convert {maybe_expression} to expression.")
 def dot_if_necessary(latex):
-    if latex[0] in '-1234567890':
-        return '\\cdot {}'.format(latex)
-    else:
-        return latex
+    return f'\\cdot {latex}' if latex[0] in '-1234567890' else latex
         
 class Expression(ABC):
     @abstractmethod
     def latex(self):
         pass
     def _repr_latex_(self):
-        return "$$" + self.latex() + "$$"
+        return f"$${self.latex()}$$"
     @abstractmethod
     def evaluate(self, **bindings):
         pass
@@ -84,26 +81,24 @@ class Sum(Expression):
     def latex(self):
         return " + ".join(exp.latex() for exp in self.exps)
     def evaluate(self, **bindings):
-        return sum([exp.evaluate(**bindings) for exp in self.exps])
+        return sum(exp.evaluate(**bindings) for exp in self.exps)
     def expand(self):
         return Sum(*[exp.expand() for exp in self.exps])
     def display(self):
-        return "Sum({})".format(",".join([e.display() for e in self.exps]))
+        return f'Sum({",".join([e.display() for e in self.exps])})'
     def derivative(self, var):
         return Sum(*[exp.derivative(var) for exp in self.exps])
     def substitute(self, var, new):
         return Sum(*[exp.substitute(var,new) for exp in self.exps])
     def _python_expr(self):
-        return "+".join("({})".format(exp._python_expr()) for exp in self.exps)
+        return "+".join(f"({exp._python_expr()})" for exp in self.exps)
     
 class Product(Expression):
     def __init__(self, exp1, exp2):
         self.exp1 = exp1
         self.exp2 = exp2
     def latex(self):
-        return "{}{}".format(
-            paren_if_instance(self.exp1,Sum,Negative,Difference),
-            dot_if_necessary(paren_if_instance(self.exp2,Sum,Negative,Difference)))
+        return f"{paren_if_instance(self.exp1, Sum, Negative, Difference)}{dot_if_necessary(paren_if_instance(self.exp2, Sum, Negative, Difference))}"
     def evaluate(self, **bindings):
         return self.exp1.evaluate(**bindings) * self.exp2.evaluate(**bindings)
     def expand(self):
@@ -117,7 +112,7 @@ class Product(Expression):
             return Product(expanded1,expanded2)
         
     def display(self):
-        return "Product({},{})".format(self.exp1.display(),self.exp2.display())
+        return f"Product({self.exp1.display()},{self.exp2.display()})"
     
     def derivative(self,var):
         if not contains(self.exp1, var):
@@ -133,28 +128,26 @@ class Product(Expression):
         return Product(self.exp1.substitute(var,exp), self.exp2.substitute(var,exp))
     
     def _python_expr(self):
-        return "({})*({})".format(self.exp1._python_expr(), self.exp2._python_expr())
+        return f"({self.exp1._python_expr()})*({self.exp2._python_expr()})"
     
 class Difference(Expression):
     def __init__(self,exp1,exp2):
         self.exp1 = exp1
         self.exp2 = exp2
     def latex(self):
-        return "{} - {}".format(
-            self.exp1.latex(),
-            paren_if_instance(self.exp2,Sum,Difference,Negative))
+        return f"{self.exp1.latex()} - {paren_if_instance(self.exp2, Sum, Difference, Negative)}"
     def evaluate(self, **bindings):
         return self.exp1.evaluate(**bindings) - self.exp2.evaluate(**bindings)
     def expand(self):
         return self
     def display(self):
-        return "Difference({},{})".format(self.exp1.display(), self.exp2.display())
+        return f"Difference({self.exp1.display()},{self.exp2.display()})"
     def derivative(self,var):
         return Difference(self.exp1.derivative(var),self.exp2.derivative(var))
     def substitute(self, var, exp):
         return Difference(self.exp1.substitute(var,exp), self.exp2.substitute(var,exp))   
     def _python_expr(self):
-        return "({}) - ({})".format(self.exp1._python_expr(), self.exp2._python_expr())
+        return f"({self.exp1._python_expr()}) - ({self.exp2._python_expr()})"
     
 class Quotient(Expression):
     def __init__(self,numerator,denominator):
@@ -167,7 +160,7 @@ class Quotient(Expression):
     def expand(self):
         return self
     def display(self):
-        return "Quotient({},{})".format(self.numerator.display(),self.denominator.display())
+        return f"Quotient({self.numerator.display()},{self.denominator.display()})"
     def substitute(self, var, exp):
         return Quotient(self.numerator.substitute(var,exp), self.denominator.substitute(var,exp))
     def derivative(self, var):
@@ -178,14 +171,13 @@ class Quotient(Expression):
             ),
             Power(self.denominator,Number(2)))
     def _python_expr(self):
-        return "({}) / ({})".format(self.exp1._python_expr(), self.exp2._python_expr())
+        return f"({self.exp1._python_expr()}) / ({self.exp2._python_expr()})"
     
 class Negative(Expression):
     def __init__(self,exp):
         self.exp = exp
     def latex(self):
-        return "- {}".format(
-            paren_if_instance(self.exp,Sum,Difference,Negative))
+        return f"- {paren_if_instance(self.exp, Sum, Difference, Negative)}"
     def evaluate(self, **bindings):
         return - self.exp.evaluate(**bindings)
     def expand(self):
@@ -195,9 +187,9 @@ class Negative(Expression):
     def substitute(self,var,exp):
         return Negative(self.exp.substitute(var,exp))
     def _python_expr(self):
-        return "- ({})".format(self.exp._python_expr())
+        return f"- ({self.exp._python_expr()})"
     def display(self):
-        return "Negative({})".format(self.exp.display())
+        return f"Negative({self.exp.display()})"
     
 class Number(Expression):
     def __init__(self,number):
@@ -209,7 +201,7 @@ class Number(Expression):
     def expand(self):
         return self
     def display(self):
-        return "Number({})".format(self.number)
+        return f"Number({self.number})"
     def derivative(self,var):
         return Number(0)
     def substitute(self,var,exp):
@@ -242,7 +234,7 @@ class Power(Expression):
 #         else:
 #             return Power(self.base.expand, expanded_exponent)
     def display(self):
-        return "Power({},{})".format(self.base.display(),self.exponent.display())
+        return f"Power({self.base.display()},{self.exponent.display()})"
     def derivative(self,var):
         if isinstance(self.exponent, Number):
             power_rule = Product(
@@ -253,12 +245,12 @@ class Power(Expression):
             exponential_rule = Product(Apply(Function("ln"),Number(self.base.number)), self)
             return Product(self.exponent.derivative(var), exponential_rule)
         else:
-            raise Exception("couldn't take derivative of power {}".format(self.display()))
+            raise Exception(f"couldn't take derivative of power {self.display()}")
     def substitute(self,var,exp):
         return Power(self.base.substitute(var,exp), self.exponent.substitute(var,exp))
     
     def _python_expr(self):
-        return "({}) ** ({})".format(self.base._python_expr(), self.exponent._python_expr())
+        return f"({self.base._python_expr()}) ** ({self.exponent._python_expr()})"
     
 class Variable(Expression):
     def __init__(self,symbol):
@@ -270,17 +262,11 @@ class Variable(Expression):
     def expand(self):
         return self
     def display(self):
-        return "Variable(\"{}\")".format(self.symbol)
+        return f'Variable(\"{self.symbol}\")'
     def derivative(self, var):
-        if self.symbol == var.symbol:
-            return Number(1)
-        else:
-            return Number(0)
+        return Number(1) if self.symbol == var.symbol else Number(0)
     def substitute(self, var, exp):
-        if self.symbol == var.symbol:
-            return exp
-        else:
-            return self
+        return exp if self.symbol == var.symbol else self
         
     def _python_expr(self):
         return self.symbol
@@ -307,7 +293,7 @@ class Apply(Expression):
     def expand(self):
         return Apply(self.function, self.argument.expand())
     def display(self):
-        return "Apply(Function(\"{}\"),{})".format(self.function.name, self.argument.display())
+        return f'Apply(Function(\"{self.function.name}\"),{self.argument.display()})'
     def derivative(self, var):
         return Product(
                 self.argument.derivative(var), 
@@ -376,7 +362,7 @@ def contains(exp, var):
     elif isinstance(exp, Number):
         return False
     elif isinstance(exp, Sum):
-        return any([contains(e,var) for e in exp.exps])
+        return any(contains(e,var) for e in exp.exps)
     elif isinstance(exp, Product):
         return contains(exp.exp1,var) or contains(exp.exp2,var)
     elif isinstance(exp, Power):

@@ -17,10 +17,10 @@ def subtract(v1,v2):
     return tuple(v1-v2 for (v1,v2) in zip(v1,v2))
 
 def length(v):
-    return sqrt(sum([coord ** 2 for coord in v]))
+    return sqrt(sum(coord ** 2 for coord in v))
 
 def dot(u,v):
-    return sum([coord1 * coord2 for coord1,coord2 in zip(u,v)])
+    return sum(coord1 * coord2 for coord1,coord2 in zip(u,v))
 
 def distance(v1,v2):
     return length(subtract(v1,v2))

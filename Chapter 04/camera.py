@@ -26,10 +26,12 @@ class Camera():
 
     def is_shooting(self):
         # print(self.shots, self.remaining_shots, self.made_comic_strip, self.comic_strip)
-        if self.shots and not self.remaining_shots and (self.made_comic_strip or not self.comic_strip):
-            return False
-        else:
-            return True
+        return bool(
+            not self.shots
+            or self.remaining_shots
+            or not self.made_comic_strip
+            and self.comic_strip
+        )
 
     def indexes(self):
         if type(self.shots) == int:
@@ -61,7 +63,7 @@ class Camera():
             print('offsets',(x_offset,y_offset))
             new_im.paste(im, (x_offset,y_offset))
 
-        new_im.save(os.path.join(self.dir, self.name +'_comic_strip.png'))
+        new_im.save(os.path.join(self.dir, f'{self.name}_comic_strip.png'))
         self.made_comic_strip = True
 
     def should_shoot(self):

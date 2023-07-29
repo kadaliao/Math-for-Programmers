@@ -25,9 +25,8 @@ def matrix_multiply(a,b):
 
 def random_matrix(rows,cols,min=-2,max=2):
     return tuple(
-        tuple(
-        randint(min,max) for j in range(0,cols))
-        for i in range(0,rows)
+        tuple(randint(min, max) for _ in range(0, cols))
+        for _ in range(0, rows)
     )
 
 def to_latex(m):

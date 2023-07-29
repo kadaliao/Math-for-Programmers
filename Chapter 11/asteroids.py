@@ -91,16 +91,16 @@ class PolygonModel():
                 for i in range(0,point_count)]
 
     def does_collide(self, other_poly):
-        for other_segment in other_poly.segments():
-            if self.does_intersect(other_segment):
-                return True
-        return False
+        return any(
+            self.does_intersect(other_segment)
+            for other_segment in other_poly.segments()
+        )
 
     def does_intersect(self, other_segment):
-        for segment in self.segments():
-            if do_segments_intersect(other_segment,segment):
-                return True
-        return False
+        return any(
+            do_segments_intersect(other_segment, segment)
+            for segment in self.segments()
+        )
 
 class Ship(PolygonModel):
     def __init__(self):
