@@ -23,7 +23,7 @@ import sys
 import camera
 for i in range(10):
     if '--snapshot' in sys.argv:
-        camera.default_camera = camera.Camera('fig_4_UN_04_%s' % i,[0])
+        camera.default_camera = camera.Camera(f'fig_4_UN_04_{i}', [0])
     ####################################################################
 
     draw_model(polygon_map(compose(rotate_x_by(2*pi*i/10),scale_by(-1)), load_triangles()))

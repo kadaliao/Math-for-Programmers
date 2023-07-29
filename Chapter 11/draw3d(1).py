@@ -51,11 +51,9 @@ class Box3D():
 def extract_vectors_3D(objects):
     for object in objects:
         if type(object) == Polygon3D:
-            for v in object.vertices:
-                yield v
+            yield from object.vertices
         elif type(object) == Points3D:
-            for v in object.vectors:
-                yield v
+            yield from object.vectors
         elif type(object) == Arrow3D:
             yield object.tip
             yield object.tail
@@ -65,7 +63,7 @@ def extract_vectors_3D(objects):
         elif type(object) == Box3D:
             yield object.vector
         else:
-            raise TypeError("Unrecognized object: {}".format(object))
+            raise TypeError(f"Unrecognized object: {object}")
 
 def draw3d(*objects, origin=True, axes=True, width=6, save_as=None):
 
@@ -144,6 +142,6 @@ def draw3d(*objects, origin=True, axes=True, width=6, save_as=None):
             raise TypeError("Unrecognized object: {}".format(object))
 
     if save_as:
-        plt.savefig("images/"+save_as)
+        plt.savefig(f"images/{save_as}")
 
     plt.show()

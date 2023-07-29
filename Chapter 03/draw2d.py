@@ -38,11 +38,9 @@ class Segment2D():
 def extract_vectors_2d(objects):
     for object in objects:
         if type(object) == Polygon2D:
-            for v in object.vertices:
-                yield v
+            yield from object.vertices
         elif type(object) == Points2D:
-            for v in object.vectors:
-                yield v
+            yield from object.vectors
         elif type(object) == Arrow2D:
             yield object.tip
             yield object.tail
@@ -50,7 +48,7 @@ def extract_vectors_2d(objects):
             yield object.start_point
             yield object.end_point
         else:
-            raise TypeError("Unrecognized object: {}".format(object))
+            raise TypeError(f"Unrecognized object: {object}")
 
 def draw2d(*objects, origin=True, axes=True, grid=(1,1), nice_aspect_ratio=True,
             width=6, save_as=None):
